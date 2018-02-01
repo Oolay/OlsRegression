@@ -197,11 +197,12 @@ class RSM_regression(object):
 
         return self.W
 
-    def forwardPlot(self,X,W):
+    def forwardUncoded(self,X,W):
         if isinstance(X, pd.DataFrame):
             X = X.values
-        return W[0]*((X[0] - 67.5)/25) + W[1]*((X[1] - 49)/14) + W[2]*((X[0] - 67.5)/25)**2 + W[3]*((X[0] - 67.5)/25)*((X[1] - 49)/14) \
-         + W[4]*((X[1] - 49)/14)**2 + W[5]
+        return W[0]*((X[0] - self.centroids[0])/self.codedUnits[0]) + W[1]*((X[1] - self.centroids[1])/self.codedUnits[1]) \
+        + W[2]*((X[0] - self.centroids[0])/self.codedUnits[0])**2 + W[3]*((X[0] - self.centroids[0])/self.codedUnits[0])*((X[1] - self.centroids[1])/self.codedUnits[1]) \
+        + W[4]*((X[1] - self.centroids[1])/self.codedUnits[1])**2 + W[5]
 
     def plot3D(self, n_factor = 2, Max = [1.41, 1.41], Min = [-1.41,-1.41], a = 0, x_label = '', y_label = '', z_label = '', title = ''):
 
@@ -221,10 +222,9 @@ class RSM_regression(object):
 
         if self.modelType == 'SO':
             if n_factor == 2:
-                ys = np.array([self.forwardPlot(np.array([X0,X1,X0*X0,X0*X1,X1*X1,1]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
-                ys_colour_restraint = np.array([(-2.52926*((x - 49)/14) + 0.01168709*((x - 49)/14)**2 + 185.52329) for x in np.linspace(Min[1],Max[1],50)])
+                ys = np.array([self.forward(np.array([X0,X1,X0*X0,X0*X1,X1*X1,1]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
             if n_factor == 3:
-                ys = np.array([self.forwardPlot(np.array([X0,X1,a,X0*X0,X0*X1,X0*a,X1*X1,X1*a,a*a,1]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
+                ys = np.array([self.forward(np.array([X0,X1,a,X0*X0,X0*X1,X0*a,X1*X1,X1*a,a*a,1]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
         elif self.modelType == 'INT':
             ys = np.array([self.forward(np.array([X0,X1,X0*X1,1]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
         elif self.modelType =='FO':
@@ -232,8 +232,6 @@ class RSM_regression(object):
 
         elif self.modelType == 'MIX':
             ys = np.array([self.forward(np.array([X0, X1, (1 - X0 -X1), X0*X1, X0*(1 - X0 -X1), X1*(1 - X0 - X1), X0*X1*(1 - X0 -X1)]),self.W) for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
-
-        Z = np.array([4.92561585 for X0,X1 in zip(np.ravel(XX0),np.ravel(XX1))])
 
 
         ys = ys.reshape(XX1.shape)

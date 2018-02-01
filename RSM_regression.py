@@ -175,38 +175,19 @@ class RSM_regression(object):
         return self.residuals
 
     def getWeights(self):
-        return dict(zip(self.df_X.columns, self.W_SO)), self.W_SO
+        return dict(zip(self.df_X.columns, self.W))
 
-    def solveSecondOrder(self,X):
+    def evaluateModel(self,X):
         X = self.variable_engineer(X)[1]
-        return X.dot(self.W_SO)
-
-    def solvedeCodedSO(self,X):
-        X = np.array([X[0],X[1],X[0]*X[0],X[0]*X[1],X[1]*X[1],1])
-        return X.dot(self.WdeCoded)
-
-    def getDeCodedWeights(self):
-        WdeCoded0 = ( (self.W_SO[0]/self.codedUnits[0]) - ((self.W_SO[2]*(2)*self.centroids[0])/(self.codedUnits[0])**2) - (self.W_SO[3])*(self.centroids[1])/(self.codedUnits[0]*self.codedUnits[1]) )
-        WdeCoded1 = ( (self.W_SO[1]/self.codedUnits[1]) - ((self.W_SO[4]*(2)*self.centroids[1])/(self.codedUnits[1])**2) - (self.W_SO[3])*(self.centroids[0])/(self.codedUnits[0]*self.codedUnits[1]) )
-        WdeCoded2 = (self.W_SO[2]/(self.codedUnits[0])**2)
-        WdeCoded3 = (self.W_SO[3]/(self.codedUnits[0]*self.codedUnits[1])) #x0x1 term
-        WdeCoded4 = (self.W_SO[4]/(self.codedUnits[1])**2)
-        WdeCoded5 = ( self.W_SO[5] - (self.W_SO[0]*self.centroids[0]/self.codedUnits[0]) - (self.W_SO[1]*self.centroids[1]/self.codedUnits[1]) + (self.W_SO[2]*(self.centroids[0]**2)/(self.codedUnits[0]**2)) \
-        + (self.W_SO[4]*(self.centroids[1]**2)/(self.codedUnits[1]**2)) + (self.W_SO[3]*self.centroids[0]*self.centroids[1]/(self.codedUnits[0]*self.codedUnits[1])) )
-
-        self.WdeCoded = np.array([WdeCoded0,WdeCoded1,WdeCoded2,WdeCoded3,WdeCoded4,WdeCoded5])
-
-        return self.WdeCoded
+        return X.dot(self.W)
 
     def process(self,Y,l1=None,learning_rate=0.001,l2=0):
         self.Y = Y
-        #self.Y = np.reshape(self.Y,(Y.shape[0],1))
-
+        
         self.W = self.weights(self.X,self.Y,l1,learning_rate,l2)
 
         self.Yhat = self.forward(self.df_X,self.W)
-        #print(self.Yhat_FO)'''
-
+        
         print('==========================================================')
         print('                 Regression stats')
         print('==========================================================')

@@ -45,9 +45,6 @@ class RSM_regression(object):
                 self.df_X[str(col_comb[0]) + str(col_comb[1])] = self.df_X[col_comb[0]]*self.df_X[col_comb[1]]
             self.df_X['X0X1X2'] = self.df_X['X0']*self.df_X['X1']*self.df_X['X2']
 
-        #self.X_decoded_FO = self.decodeUnits(self.X_first_order)
-        #print(self.df_X_second_order)
-        #print(self.decoded_FO_X)
         self.X = self.df_X.values
         return self.df_X, self.X
 
@@ -247,39 +244,30 @@ class RSM_regression(object):
 
         plt.show()
 
+    def minObjective(self,X):
+        X_FO = list(X)
+        combinations = itertools.combinations_with_replacement(X,2)
+        X_SO = [comb[0] + comb[1] for comb in combinations]
+        X_all = X_FO + X_SO
+        X_all.append(1)
+        return X_all.dot(self.W)
+    
+    def maxObjective(self,X):
+        X_FO = list(X)
+        combinations = itertools.combinations_with_replacement(X,2)
+        X_SO = [comb[0] + comb[1] for comb in combinations]
+        X_all = X_FO + X_SO
+        X_all.append(1)
+        return -(X_all.dot(self.W))
+    
+    def optimise_n2(self, bnds, minimise = False):
 
-    def maxObjective_n2(self,X):
-        X2 = np.array([X[0],X[1],X[0]*X[0],X[0]*X[1],X[1]*X[1],1])
-        return -(X2.dot(self.W_SO))
-
-    def minObjective_n2(self,X):
-        X2 = np.array([X[0],X[1],X[0]*X[0],X[0]*X[1],X[1]*X[1],1])
-        return (X2.dot(self.W_SO))
-
-    def optimise_n2(self, minimise = False):
-        b0 = (1,1)
-        b1 = (-5,5)
-
-        bnds = (b1,b1)
-        X_init = np.random.randn(2,1)
+        X_init = np.random.randn(self.D,1)
         if minimise == True:
-            objective = self.minObjective_n2
+            objective = self.minObjective
         else:
-            objective = self.maxObjective_n2
+            objective = self.maxObjective
         sol = minimize(objective,X_init,method = 'SLSQP',bounds = bnds)
         print(sol)
         return sol
 
-    def objective_n3(self,X):
-        X2 = np.array([X[0],X[1],X[2],X[0]*X[0],X[0]*X[1],X[0]*X[2],X[1]*X[1],X[1]*X[2],X[2]*X[2],1])
-        return -(X2.dot(self.W_SO))
-
-    def optimise_n3(self):
-        b0 = (1,1)
-        b1 = (-1.5,1.5)
-
-        bnds = (b1,b1,b1)
-        X_init = np.random.randn(3,1)
-        sol = minimize(self.objective_n3,X_init,method = 'SLSQP',bounds = bnds)
-        print(sol)
-        return sol
